@@ -9,7 +9,7 @@ import numpy as np
 from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 
-def segmented_upper_hull(reflectance, wavelengths = "auto", return_type = "band_depth"):
+def segmented_upper_hull(reflectance, wavelengths=None , return_type = "band_depth"):
     """
     Segmented Upper Hull (SUH) continuum removal following Clark et al. (1987).
 
@@ -46,22 +46,24 @@ def segmented_upper_hull(reflectance, wavelengths = "auto", return_type = "band_
         - "band_depth": Absorption depth (1 - continuum_removed)
         - "continuum_removed": Normalized reflectance (reflectance / continuum)
         - "continuum_line": Interpolated segmented hull values
-        - "tiepoints": List of (wavelength, reflectance) hull points
+        - "upper_hull": List of (wavelength, reflectance) hull points
         - "all": Dictionary containing all above outputs
 
     Returns
     -------
     array-like or dict
     """
-    from scipy.signal import find_peaks
 
-    if wavelengths == "auto":
-        if hasattr(reflectance, 'index'):
-            wavelengths = reflectance.index.values  # For Series
-        elif hasattr(reflectance, 'columns'):
-            wavelengths = reflectance.columns.values  # For DataFrame
-        else:
-            raise ValueError("Cannot auto-detect wavelengths")
+    if wavelengths is None:
+        wavelengths = np.arange(len(reflectance))
+    elif isinstance(wavelengths, (np.ndarray, list)):
+        pass  # array or list
+    elif hasattr(reflectance, 'index'):
+        wavelengths = reflectance.index.values  # For Series
+    elif hasattr(reflectance, 'columns'):
+        wavelengths = reflectance.columns.values  # For DataFrame
+    else:
+        raise ValueError("Cannot auto-detect wavelengths")
 
     if len(reflectance) != len(wavelengths):
         raise ValueError("Reflectance and wavelengths must have same length")
@@ -163,6 +165,7 @@ def segmented_upper_hull(reflectance, wavelengths = "auto", return_type = "band_
     # Extract wavelengths and reflectances from tiepoints
     hull_wl = np.array([pt[0] for pt in all_tiepoints])
     hull_refl = np.array([pt[1] for pt in all_tiepoints])
+    hull = np.column_stack([hull_wl, hull_refl])
 
     # Interpolate to create continuum line
     from scipy.interpolate import interp1d
@@ -181,12 +184,12 @@ def segmented_upper_hull(reflectance, wavelengths = "auto", return_type = "band_
         return continuum_removed
     if return_type == "continuum_line":
         return continuum_line
-    if return_type == "tiepoints":
-        return all_tiepoints
+    if return_type == "hull":
+        return hull
     if return_type == "all":
         return {
-            'segmented_hull': continuum_line,
+            'continuum_line': continuum_line,
             'continuum_removed': continuum_removed,
             'band_depth': band_depth,
-            'tiepoints': all_tiepoints,
+            'hull': hull,
         }
