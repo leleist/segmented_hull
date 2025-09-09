@@ -20,7 +20,7 @@ The implementation follows the algorithm described in Clark et al. (1987) as Seg
 
 
 ### comparison to convex hull
-<img src="data/SUH_VS_CUH.gif" alt="Comparison of convex hull and SUH" width="800"/>
+<img src="data/SUH_vs_CUH.gif" alt="Comparison of convex hull and SUH" width="800"/>
 
 Notice how prominent peaks at ~550 nm and ~1700 nm are missed by the convex hull, due to the convexity constraint.
 
