@@ -9,7 +9,7 @@ import numpy as np
 from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 
-def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"):
+def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth", peak_prominence_factor=0.01, threshold=1.001):
     """
     Segmented Upper Hull (SUH) continuum removal following Clark et al. (1987).
 
@@ -48,6 +48,12 @@ def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"
         - "continuum_line": Interpolated segmented hull values
         - "upper_hull": List of (wavelength, reflectance) hull points
         - "all": Dictionary containing all above outputs
+    peak_prominence_factor : float, default 0.01
+        Minimum prominence of peaks as a fraction of the reflectance range.
+        Helps avoid detecting noise as peaks.
+    threshold : float, default 1.001
+        Threshold for considering a point above the continuum line.
+        Values slightly above 1 (e.g., 1.001) help avoid numerical issues.
 
     Returns
     -------
@@ -94,7 +100,7 @@ def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"
             return None
 
         # Add prominence filter to avoid detecting noise as peak
-        min_prominence = np.ptp(refl) * 0.01  # 1% of the range
+        min_prominence = np.ptp(refl) * peak_prominence_factor  # 1% of the range
         peaks, properties = find_peaks(remaining_refl, prominence=min_prominence)
 
         if len(peaks) == 0:
@@ -103,7 +109,7 @@ def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"
         # Return first peak found, adjusted for full array indexing
         return peaks[0] + start_idx + 1
 
-    def process_segment(wl, refl, current_idx, next_idx, threshold=1.001):
+    def process_segment(wl, refl, current_idx, next_idx, threshold=threshold):
         """
         Check if a segment from current_idx to next_idx has points above the continuum line.
 
