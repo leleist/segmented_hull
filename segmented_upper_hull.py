@@ -20,7 +20,7 @@ def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"
     References
     ----------
     Clark, R.N., King, T.V.V., and Gorelick, N.S. (1987). Automatic continuum
-    analysis of reflectance spectra. Proceedings of the Third Airborne Imaging
+    analysis of reflectance spectra. JPL Proceedings of the Third Airborne Imaging
     Spectrometer Data Analysis Workshop, 138-142.
     https://ntrs.nasa.gov/citations/19880004388
     https://ntrs.nasa.gov/api/citations/19880004388/downloads/19880004388.pdf
@@ -227,3 +227,5 @@ def segmented_upper_hull(reflectance, wavelengths=None, return_type="band_depth"
             'band_depth': band_depth,
             'hull': hull,
         }
+
+    # TODO: add final, overall BD values check to validate that all datapoints are below the hull
